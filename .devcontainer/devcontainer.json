@@ -1,0 +1,84 @@
+{
+	"name": "UtaReco Development Environment",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": "."
+	},
+	"workspaceFolder": "/app",
+
+	// Features to add to the dev container
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {},
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			"installZsh": true,
+			"installOhMyZsh": true,
+			"username": "vscode",
+			"userUid": "1000",
+			"userGid": "1000"
+		}
+	},
+
+	// Configure tool-specific properties
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"charliermarsh.ruff",
+				"ms-python.mypy-type-checker",
+				"ms-vscode.vscode-json",
+				"redhat.vscode-yaml",
+				"ms-vscode.makefile-tools",
+				"bradlc.vscode-tailwindcss"
+			],
+			"settings": {
+				"python.defaultInterpreterPath": "/usr/bin/python3",
+				"python.linting.enabled": true,
+				"python.linting.ruffEnabled": true,
+				"python.formatting.provider": "none",
+				"[python]": {
+					"editor.formatOnSave": true,
+					"editor.codeActionsOnSave": {
+						"source.organizeImports": "explicit"
+					},
+					"editor.defaultFormatter": "charliermarsh.ruff"
+				},
+				"python.testing.pytestEnabled": true,
+				"python.testing.pytestPath": "/usr/local/bin/pytest",
+				"terminal.integrated.defaultProfile.linux": "zsh"
+			}
+		}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally
+	"forwardPorts": [8000, 8001],
+	"portsAttributes": {
+		"8000": {
+			"label": "FastAPI Production",
+			"onAutoForward": "notify"
+		},
+		"8001": {
+			"label": "FastAPI Development", 
+			"onAutoForward": "notify"
+		}
+	},
+
+	// Use 'postCreateCommand' to run commands after the container is created
+	"postCreateCommand": "echo 'UtaReco Development Environment Ready! 🎵' && python3 -c 'import essentia; print(f\"Essentia {essentia.__version__} available\")'",
+
+	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root
+	"remoteUser": "root",
+
+	// Set environment variables
+	"containerEnv": {
+		"PYTHONPATH": "/app:/usr/local/lib/python3/dist-packages",
+		"DEBUG": "true"
+	},
+
+	// Mount the host's SSH agent socket to the container and project files
+	"mounts": [
+		"source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached",
+		"source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached"
+	]
+}
