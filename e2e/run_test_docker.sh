@@ -16,6 +16,6 @@ docker run --rm \
     -v "$(pwd)/e2e:/app/e2e:ro" \
     -w /app \
     utareco-test \
-    python3 e2e/test_case01.py
+    python3 e2e/case01/test_case01.py
 
 echo "テストが完了しました。"
