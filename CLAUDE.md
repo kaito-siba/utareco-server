@@ -1,5 +1,7 @@
 # 🏗️ CLAUDE.md - Claude Code Global Configuration
 
+コードコメント・コミットメッセージ・プルリクエストのコメント・ユーザーへの応答はすべて **日本語** で記述してください。
+
 This file provides guidance to Claude Code (claude.ai/code) when working across all projects.
 
 ## 📋 Overview
