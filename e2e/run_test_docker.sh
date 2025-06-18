@@ -9,13 +9,22 @@ echo "Docker環境でe2eテストを実行します..."
 echo "Dockerイメージをビルド中..."
 docker build -f Dockerfile.test -t utareco-test .
 
-# テストを実行
+# CASE01テストを実行
 echo "CASE01テストを実行中..."
 docker run --rm \
     -v "$(pwd)/app:/app/app:ro" \
     -v "$(pwd)/e2e:/app/e2e:ro" \
     -w /app \
     utareco-test \
-    python3 e2e/case01/test_case01.py
+    python3 e2e/case01/test_case.py
 
-echo "テストが完了しました。"
+# CASE02テストを実行
+echo "CASE02テストを実行中..."
+docker run --rm \
+    -v "$(pwd)/app:/app/app:ro" \
+    -v "$(pwd)/e2e:/app/e2e:ro" \
+    -w /app \
+    utareco-test \
+    python3 e2e/case02/test_case.py
+
+echo "全てのテストが完了しました。"
