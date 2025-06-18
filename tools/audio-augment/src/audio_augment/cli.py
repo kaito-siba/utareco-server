@@ -157,6 +157,14 @@ def batch(
         # テンポを0.5から2.0倍、0.25刻みで変更
         audio-augment batch input_dir output_dir -t 0.5 2.0 --tempo-step 0.25
     """
+    # パラメータのバリデーション
+    if step <= 0:
+        click.echo("エラー: --step は正の値である必要があります", err=True)
+        raise click.Abort()
+
+    if tempo_step <= 0:
+        click.echo("エラー: --tempo-step は正の値である必要があります", err=True)
+        raise click.Abort()
     # 入力ファイルを収集
     input_files: List[Path] = []
     for ext in extensions:
