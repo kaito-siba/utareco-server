@@ -77,7 +77,9 @@ def calculate_similarity_advanced(
     for shift in range(12):
         shifted_query = np.roll(mean_query, shift)
         # コサイン類似度に加えてユークリッド距離も考慮
-        cosine_sim = np.dot(shifted_query, mean_reference)
+        cosine_sim_raw = np.dot(shifted_query, mean_reference)
+        # コサイン類似度を0-1範囲にマッピング
+        cosine_sim = (cosine_sim_raw + 1) / 2
         euclidean_dist = np.linalg.norm(shifted_query - mean_reference)
         # 距離を類似度に変換（0-1範囲）
         distance_sim = 1.0 / (1.0 + euclidean_dist)
