@@ -8,37 +8,37 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from app.core.audio.hpcp import extract_hpcp, normalize_hpcp  # noqa: E402
-from app.core.matching.similarity import is_same_recording_advanced  # noqa: E402
+from app.core.matching.similarity import (  # noqa: E402
+    is_same_recording_advanced,
+)
 
 
 def run_case03_test() -> bool:
     """CASE03のテストを実行する.
-    
-    原曲とカラオケ録音の同一性判定テスト。
-    音質の違いや歌声の違い、録音環境の違いがあっても
-    同じ楽曲として正しく認識されることを確認する。
 
     Returns:
         すべてのテストがパスした場合True、それ以外はFalse
     """
     # テストデータのパス
     dataset_dir = Path(__file__).parent / "datasets"
+
+    # テストファイル
     test_files = {
-        "original": dataset_dir / "sayonara.wav",
-        "karaoke": dataset_dir / "sayonara_record.wav",
+        "sayonara_original": dataset_dir / "sayonara.wav",
+        "sayonara_karaoke": dataset_dir / "sayonara_record.wav",
+        "dramaturgy": dataset_dir / "Dramaturgy.wav",
     }
 
     # 期待される結果
     expected_results = [
-        ("original", "karaoke", True),  # 原曲 vs カラオケ録音 → 同一
+        ("sayonara_original", "sayonara_karaoke", True),  # 同一楽曲
+        ("sayonara_karaoke", "dramaturgy", False),  # 異なる楽曲
+        ("dramaturgy", "sayonara_karaoke", False),  # 異なる楽曲
     ]
-
-    print("CASE03: 原曲とカラオケ録音の同一性判定テスト")
-    print("=" * 60)
 
     # 各ファイルのHPCP特徴を抽出
     print("HPCP特徴を抽出中...")
-    hpcp_features: dict[str, any] = {}
+    hpcp_features = {}
     for file_id, file_path in test_files.items():
         try:
             print(f"  {file_path.name} を処理中...")
@@ -51,9 +51,9 @@ def run_case03_test() -> bool:
             return False
 
     # テストを実行
-    print("\n原曲とカラオケ録音の同一性判定テストを実行中...")
+    print("\n同一性判定テストを実行中...")
     all_passed = True
-    results: list[tuple[str, str, bool, bool]] = []
+    results = []
 
     for file1_id, file2_id, expected in expected_results:
         print(f"\n  {file1_id} vs {file2_id}:")
@@ -65,46 +65,45 @@ def run_case03_test() -> bool:
 
         # 結果を記録
         passed = is_same == expected
-        results.append((file1_id, file2_id, is_same, passed))
-        
-        status = "✅ PASS" if passed else "❌ FAIL"
+        results.append((file1_id, file2_id, is_same, expected, passed))
+
         result_str = "同一" if is_same else "異なる"
         expected_str = "同一" if expected else "異なる"
-        print(f"    判定結果: {result_str} (期待値: {expected_str}) - {status}")
+        status = "✅ PASS" if passed else "❌ FAIL"
+
+        print(f"    判定: {result_str} (期待値: {expected_str}) {status}")
 
         if not passed:
             all_passed = False
 
     # 結果を表示
     print("\n【テスト結果】")
-    print("-" * 70)
-    print(f"{'リファレンス':^15} {'テスト対象':^15} {'判定':^10} {'期待値':^10} {'結果':^10}")
-    print("-" * 70)
+    print("-" * 80)
+    print(
+        f"{'テスト対象1':^20} {'テスト対象2':^20} {'判定':^10} {'期待値':^10} {'結果':^10}"
+    )
+    print("-" * 80)
 
-    for (file1_id, file2_id, expected), (_, _, is_same, passed) in zip(
-        expected_results, results, strict=False
-    ):
-        file1_display = "原曲" if file1_id == "original" else "カラオケ"
-        file2_display = "カラオケ録音" if file2_id == "karaoke" else "原曲"
-        expected_str = "同一" if expected else "異なる"
+    for file1_id, file2_id, is_same, expected, passed in results:
         result_str = "同一" if is_same else "異なる"
+        expected_str = "同一" if expected else "異なる"
         status = "✅ PASS" if passed else "❌ FAIL"
         print(
-            f"{file1_display:^15} {file2_display:^15} {result_str:^10} "
-            f"{expected_str:^10} {status:^10}"
+            f"{file1_id:^20} {file2_id:^20} {result_str:^10} {expected_str:^10} {status:^10}"
         )
 
-    print("-" * 70)
-    
-    # 統計情報
+    print("-" * 80)
+
+    # 統計を表示
     total_tests = len(results)
-    passed_tests = sum(1 for _, _, _, passed in results if passed)
-    
+    passed_tests = sum(1 for _, _, _, _, passed in results if passed)
+    failed_tests = total_tests - passed_tests
+
     print(f"\n総テスト数: {total_tests}")
     print(f"合格: {passed_tests}")
-    print(f"不合格: {total_tests - passed_tests}")
+    print(f"不合格: {failed_tests}")
     print(f"合格率: {passed_tests/total_tests*100:.1f}%")
-    
+
     print(
         "\n総合結果: "
         + (
@@ -113,13 +112,6 @@ def run_case03_test() -> bool:
             else "❌ 一部のテストが失敗しました"
         )
     )
-
-    if all_passed:
-        print("\n🎉 音楽マッチングシステムは以下の能力を持つことが確認されました:")
-        print("  • 録音品質の違いへの堅牢性")
-        print("  • 歌声の違いへの対応")
-        print("  • 録音環境の違いへの対応")
-        print("  • カラオケアプリでの楽曲識別への対応")
 
     return all_passed
 
