@@ -165,6 +165,18 @@ def batch(
     if tempo_step <= 0:
         click.echo("エラー: --tempo-step は正の値である必要があります", err=True)
         raise click.Abort()
+
+    # 範囲のバリデーション
+    pitch_min, pitch_max = pitch_range
+    if pitch_min > pitch_max:
+        click.echo("エラー: ピッチ範囲の最小値が最大値より大きいです", err=True)
+        raise click.Abort()
+
+    tempo_min, tempo_max = tempo_range
+    if tempo_min > tempo_max:
+        click.echo("エラー: テンポ範囲の最小値が最大値より大きいです", err=True)
+        raise click.Abort()
+
     # 入力ファイルを収集
     input_files: List[Path] = []
     for ext in extensions:
@@ -179,23 +191,31 @@ def batch(
     # 出力ディレクトリを作成
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # ピッチシフトの値を生成
-    pitch_min, pitch_max = pitch_range
+    # ピッチシフトの値を生成（浮動小数点エラーを避けるため整数ベースのループを使用）
     pitch_values = []
-    current_pitch = pitch_min
-    while current_pitch <= pitch_max:
-        if current_pitch != 0:  # 0は変更なしなのでスキップ
-            pitch_values.append(current_pitch)
-        current_pitch += step
+    if pitch_min <= pitch_max:
+        num_steps = int((pitch_max - pitch_min) / step) + 1
+        for i in range(num_steps):
+            pitch_value = pitch_min + (i * step)
+            if pitch_value > pitch_max:
+                break
+            if (
+                abs(pitch_value) > 1e-10
+            ):  # 0は変更なしなのでスキップ（浮動小数点精度を考慮）
+                pitch_values.append(pitch_value)
 
-    # テンポ変更率の値を生成
-    tempo_min, tempo_max = tempo_range
+    # テンポ変更率の値を生成（浮動小数点エラーを避けるため整数ベースのループを使用）
     tempo_values = []
-    current_tempo = tempo_min
-    while current_tempo <= tempo_max:
-        if abs(current_tempo - 1.0) > 0.01:  # 1.0は変更なしなのでスキップ
-            tempo_values.append(current_tempo)
-        current_tempo += tempo_step
+    if tempo_min <= tempo_max:
+        num_steps = int((tempo_max - tempo_min) / tempo_step) + 1
+        for i in range(num_steps):
+            tempo_value = tempo_min + (i * tempo_step)
+            if tempo_value > tempo_max:
+                break
+            if (
+                abs(tempo_value - 1.0) > 1e-6
+            ):  # 1.0は変更なしなのでスキップ（より厳密な精度を使用）
+                tempo_values.append(tempo_value)
 
     total_variations = len(pitch_values) + len(tempo_values)
     click.echo(
