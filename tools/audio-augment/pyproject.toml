@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "audio-augment"
+version = "0.1.0"
+description = "音声ファイルのキー・テンポ変更ユーティリティ"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "click>=8.1.8",
+    "numpy>=1.24.4",
+    "pyrubberband>=0.4.0",
+    "soundfile>=0.13.1",
+]
+
+[project.scripts]
+audio-augment = "audio_augment.cli:augment"
+audio-augment-batch = "audio_augment.cli:cli"
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.402",
+    "pytest>=8.3.5",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.11.13",
+]
+
+[tool.pyright]
+include = ["src", "tests"]
+pythonVersion = "3.8"
+typeCheckingMode = "standard"
+
+[tool.ruff]
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
