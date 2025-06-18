@@ -1,0 +1,8 @@
+# 音源ファイルをgit対象外にする
+*.m4a
+*.wav
+*.mp3
+*.flac
+*.aac
+*.ogg
+*.wma
