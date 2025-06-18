@@ -17,6 +17,7 @@ dependencies = [
     "numpy<2",
     "pydantic",
     "essentia>=2.1b6.dev1177",
+    "sqlite-vec>=0.1.6",
 ]
 
 [project.optional-dependencies]

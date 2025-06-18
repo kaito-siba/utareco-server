@@ -102,7 +102,7 @@ def run_case03_test() -> bool:
     print(f"\n総テスト数: {total_tests}")
     print(f"合格: {passed_tests}")
     print(f"不合格: {failed_tests}")
-    print(f"合格率: {passed_tests/total_tests*100:.1f}%")
+    print(f"合格率: {passed_tests / total_tests * 100:.1f}%")
 
     print(
         "\n総合結果: "
