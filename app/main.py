@@ -1,6 +1,7 @@
 """FastAPI application entry point for UtaReco server."""
 
 import os
+import sys
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,11 +34,11 @@ async def health_check() -> dict[str, str]:
     """Health check endpoint for Docker container monitoring."""
     try:
         # Test Essentia import and basic functionality
-        import essentia
-        import essentia.standard as es
+        import essentia  # type: ignore
+        import essentia.standard as es  # type: ignore
 
         # Test basic algorithm instantiation
-        windowing = es.Windowing(type="hann")
+        es.Windowing(type="hann")
 
         return {
             "status": "healthy",
@@ -60,7 +61,7 @@ async def info() -> dict[str, str]:
         "name": "UtaReco",
         "description": "Music recognition service using audio fingerprinting",
         "version": "0.1.0",
-        "python_version": os.sys.version,
+        "python_version": sys.version,
         "environment": "development" if os.getenv("DEBUG") else "production",
     }
 
@@ -69,7 +70,7 @@ async def info() -> dict[str, str]:
 async def test_essentia() -> dict[str, str]:
     """Test Essentia algorithms with sample data."""
     try:
-        import essentia.standard as es
+        import essentia.standard as es  # type: ignore
         import numpy as np
 
         # Create sample audio data (1 second of 440Hz sine wave)

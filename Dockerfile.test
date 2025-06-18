@@ -1,0 +1,36 @@
+# Use official Essentia Docker image as base
+FROM ghcr.io/mtg/essentia:nightly
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Install additional dependencies
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Install Python dependencies directly
+RUN python3 -m pip install --no-cache-dir \
+    fastapi \
+    sqlalchemy \
+    pytest \
+    numpy \
+    pydantic \
+    httpx \
+    uvicorn \
+    python-multipart \
+    anyio
+
+# Copy application code
+COPY app/ ./app/
+
+# Set PYTHONPATH to include app directory
+ENV PYTHONPATH="/app:$PYTHONPATH"
+
+# Default command
+CMD ["python3", "--version"]

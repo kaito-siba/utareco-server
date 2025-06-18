@@ -2,7 +2,7 @@
 name = "utareco-server"
 version = "0.1.0"
 description = "UtaReco (歌レコ) - Music recognition service using audio fingerprinting"
-requires-python = ">=3.8"
+requires-python = ">=3.8,<3.13"
 dependencies = [
     "fastapi",
     "sqlalchemy",
@@ -14,8 +14,9 @@ dependencies = [
     "uvicorn[standard]",
     "python-multipart",
     "anyio",
-    "numpy",
+    "numpy<2",
     "pydantic",
+    "essentia>=2.1b6.dev1177",
 ]
 
 [project.optional-dependencies]
@@ -66,6 +67,7 @@ reportMissingTypeStubs = false
 reportOptionalMemberAccess = false
 reportOptionalSubscript = false
 reportPrivateImportUsage = false
+reportAttributeAccessIssue = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
