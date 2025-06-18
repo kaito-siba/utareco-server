@@ -122,7 +122,7 @@ def calculate_similarity_advanced(
     # 4. 長さ比率による補正（テンポ変化対応）
     length_ratio = min(len(hpcp_query), len(hpcp_reference)) / max(len(hpcp_query), len(hpcp_reference))
     # テンポ変化が0.8倍～1.25倍の範囲内なら補正を適用
-    if length_ratio > 0.64:  # 0.8^2 = 0.64 (テンポ変化による長さ変化の二乗)
+    if length_ratio > 0.8:
         length_penalty = 1.0
     else:
         length_penalty = 0.95  # 長さ差が大きい場合は少し減点
