@@ -4,7 +4,7 @@ set -euo pipefail
 # e2eテストをDocker環境で実行するスクリプト
 
 # 利用可能なテストケース
-AVAILABLE_CASES=("case01" "case02" "case03" "case04")
+AVAILABLE_CASES=("case01" "case02" "case03" "case04", "case05")
 
 # ヘルプメッセージを表示
 show_help() {
