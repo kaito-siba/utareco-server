@@ -84,23 +84,29 @@ def calculate_similarity_advanced(
         # 距離を類似度に変換（0-1範囲）
         distance_sim = 1.0 / (1.0 + euclidean_dist)
         # 調和平均で組み合わせ
-        combined_sim = 2 * cosine_sim * distance_sim / (cosine_sim + distance_sim + 1e-6)
+        combined_sim = (
+            2 * cosine_sim * distance_sim / (cosine_sim + distance_sim + 1e-6)
+        )
         global_similarities.append(combined_sim)
 
     best_shift = np.argmax(global_similarities)
     global_similarity = global_similarities[best_shift]
 
     # 2. ヒストグラム特徴（より識別力の高い計算）
-    hist_query = calculate_hpcp_histogram(hpcp_query, bins=32)  # ビン数を増やして精度向上
+    hist_query = calculate_hpcp_histogram(
+        hpcp_query, bins=32
+    )  # ビン数を増やして精度向上
     hist_reference = calculate_hpcp_histogram(hpcp_reference, bins=32)
 
     # Earth Mover's Distance（EMD）風の計算
     hist_similarity = 1.0 - np.sum(np.abs(hist_query - hist_reference)) / 2
-    
+
     # カイ二乗距離も計算
-    chi2_distance = np.sum((hist_query - hist_reference) ** 2 / (hist_query + hist_reference + 1e-6))
+    chi2_distance = np.sum(
+        (hist_query - hist_reference) ** 2 / (hist_query + hist_reference + 1e-6)
+    )
     chi2_similarity = 1.0 / (1.0 + chi2_distance)
-    
+
     # ヒストグラム類似度を改善
     hist_similarity = (hist_similarity + chi2_similarity) / 2
 
@@ -122,7 +128,9 @@ def calculate_similarity_advanced(
     temporal_similarity = (temporal_cosine + temporal_distance_sim) / 2
 
     # 4. 長さ比率による補正（テンポ変化対応）
-    length_ratio = min(len(hpcp_query), len(hpcp_reference)) / max(len(hpcp_query), len(hpcp_reference))
+    length_ratio = min(len(hpcp_query), len(hpcp_reference)) / max(
+        len(hpcp_query), len(hpcp_reference)
+    )
     # テンポ変化が0.8倍～1.25倍の範囲内なら補正を適用
     if length_ratio > 0.8:
         length_penalty = 1.0

@@ -28,8 +28,7 @@ def run_case05_test() -> bool:
     # テストファイル（カラオケ音源 + ピッチ変更）
     test_files = {
         "eine_kleine": dataset_dir / "Eine_Kleine_karaoke.wav",
-        "eine_kleine_pitch": dataset_dir
-        / "Eine_Kleine_karaoke_pitch_minus_2.wav",  # noqa: E501
+        "eine_kleine_pitch": dataset_dir / "Eine_Kleine_karaoke_pitch_minus_2.wav",  # noqa: E501
         "sayonara": dataset_dir / "sayonara_karaoke.wav",
     }
 
@@ -116,27 +115,29 @@ def run_case05_test() -> bool:
     print(f"\n総テスト数: {total_tests}")
     print(f"合格: {passed_tests}")
     print(f"不合格: {failed_tests}")
-    print(f"合格率: {passed_tests/total_tests*100:.1f}%")
+    print(f"合格率: {passed_tests / total_tests * 100:.1f}%")
 
     # 詳細分析を表示
     print("\n【詳細分析】")
     same_song_tests = [r for r in results if r[3] is True]  # 期待値がTrue（同一楽曲）
     different_song_tests = [
-        r for r in results if r[3] is False  # 期待値がFalse（異なる楽曲）
+        r
+        for r in results
+        if r[3] is False  # 期待値がFalse（異なる楽曲）
     ]
 
     if same_song_tests:
         same_passed = sum(1 for r in same_song_tests if r[4])
         print(
             f"同一楽曲判定（ピッチ違い）: {same_passed}/{len(same_song_tests)} "
-            f"({same_passed/len(same_song_tests)*100:.1f}%)"
+            f"({same_passed / len(same_song_tests) * 100:.1f}%)"
         )
 
     if different_song_tests:
         diff_passed = sum(1 for r in different_song_tests if r[4])
         print(
             f"異なる楽曲判定: {diff_passed}/{len(different_song_tests)} "
-            f"({diff_passed/len(different_song_tests)*100:.1f}%)"
+            f"({diff_passed / len(different_song_tests) * 100:.1f}%)"
         )
 
     print(

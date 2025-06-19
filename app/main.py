@@ -6,6 +6,9 @@ import sys
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.v1 import api_v1_router
+from app.db.database import init_database
+
 # Create FastAPI application
 app = FastAPI(
     title="UtaReco API",
@@ -21,6 +24,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include API routers
+app.include_router(api_v1_router)
+
+
+@app.on_event("startup")
+async def startup_event():
+    """アプリケーション起動時にデータベースを初期化."""
+    init_database()
 
 
 @app.get("/")
