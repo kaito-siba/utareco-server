@@ -433,7 +433,7 @@ def create_gradio_interface():
                             None,
                             None,
                             recording_name,
-                            int(song_id) if song_id else None,
+                            int(song_id) if song_id is not None else None,
                         )
                     else:
                         return api_client.save_recording_with_hpcp(
