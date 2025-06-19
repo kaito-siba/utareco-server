@@ -18,6 +18,7 @@ dependencies = [
     "pydantic",
     "essentia>=2.1b6.dev1177",
     "sqlite-vec>=0.1.6",
+    "gradio>=4.44.1",
 ]
 
 [project.optional-dependencies]
