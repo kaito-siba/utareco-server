@@ -49,23 +49,27 @@ class SQLiteVecManager:
         cursor = conn.cursor()
 
         # HPCP特徴量ベクトルテーブル（フレーム単位）
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE VIRTUAL TABLE IF NOT EXISTS hpcp_frames USING vec0(
                 recording_id INTEGER,
                 frame_index INTEGER,
                 hpcp_vector FLOAT[12]
             )
-        """)
+        """
+        )
 
         # 楽曲レベル統計的特徴量ベクトルテーブル
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE VIRTUAL TABLE IF NOT EXISTS hpcp_summary USING vec0(
                 recording_id INTEGER,
                 mean_vector FLOAT[12],
                 std_vector FLOAT[12],
                 dominant_chord FLOAT[12]
             )
-        """)
+        """
+        )
 
         conn.commit()
 
@@ -172,10 +176,10 @@ class SQLiteVecManager:
             # フレーム単位で類似検索
             cursor.execute(
                 """
-                SELECT recording_id, distance 
-                FROM hpcp_frames 
+                SELECT recording_id, distance
+                FROM hpcp_frames
                 WHERE hpcp_vector MATCH ?
-                ORDER BY distance 
+                ORDER BY distance
                 LIMIT 20
             """,
                 (vector_data,),
@@ -240,10 +244,10 @@ class SQLiteVecManager:
         vector_data = serialize_float32(query_vector)
         cursor.execute(
             f"""
-            SELECT recording_id, distance 
-            FROM hpcp_summary 
+            SELECT recording_id, distance
+            FROM hpcp_summary
             WHERE {column_name} MATCH ?
-            ORDER BY distance 
+            ORDER BY distance
             LIMIT ?
         """,
             (vector_data, k),

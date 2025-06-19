@@ -34,7 +34,7 @@ def load_sqlite_vec(dbapi_connection, connection_record):
     dbapi_connection.enable_load_extension(True)
     sqlite_vec.load(dbapi_connection)
     dbapi_connection.enable_load_extension(False)
-    
+
     # SQLiteの設定を最適化
     dbapi_connection.execute("PRAGMA foreign_keys = ON")
     dbapi_connection.execute("PRAGMA journal_mode = WAL")  # Write-Ahead Logging
