@@ -30,9 +30,16 @@ Base = declarative_base()
 @event.listens_for(Engine, "connect")
 def load_sqlite_vec(dbapi_connection, connection_record):
     """SQLite接続時にsqlite-vec拡張を自動ロード."""
+    # sqlite-vec拡張をロード
     dbapi_connection.enable_load_extension(True)
     sqlite_vec.load(dbapi_connection)
     dbapi_connection.enable_load_extension(False)
+    
+    # SQLiteの設定を最適化
+    dbapi_connection.execute("PRAGMA foreign_keys = ON")
+    dbapi_connection.execute("PRAGMA journal_mode = WAL")  # Write-Ahead Logging
+    dbapi_connection.execute("PRAGMA synchronous = NORMAL")  # パフォーマンス向上
+    dbapi_connection.execute("PRAGMA temp_store = MEMORY")  # 一時ファイルをメモリに
 
 
 def get_db() -> Generator[Session, None, None]:
