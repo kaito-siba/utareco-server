@@ -121,7 +121,9 @@ class HPCPSearchRequest(BaseModel):
 
     hpcp_data: str = Field(..., description="HPCP特徴量（Base64エンコード）")
     search_method: str = Field(
-        "frames", description="検索方法", pattern="^(frames|mean|dominant|std)$"
+        "frames",
+        description="検索方法",
+        pattern="^(frames|mean|dominant|std)$",
     )
     limit: int = Field(5, description="取得する類似楽曲数", ge=1, le=50)
 

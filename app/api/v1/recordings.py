@@ -2,11 +2,17 @@
 
 import time
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.core.vector.sqlite_vec_manager import SQLiteVecManager
-from app.db.crud import create_hpcp_feature, create_recording, create_song, get_song
+from app.db.crud import (
+    create_hpcp_feature,
+    create_recording,
+    create_song,
+    get_song,
+    get_recordings,
+)
 from app.db.database import get_db
 from app.schemas.hpcp import (
     RecordingCreateRequest,
@@ -163,3 +169,106 @@ async def create_recording_with_hpcp(
     finally:
         if vec_manager:
             vec_manager.close()
+
+
+@router.get("/", response_model=list[RecordingInfo])
+async def list_recordings(
+    skip: int = Query(0, ge=0, description="スキップするレコード数"),
+    limit: int = Query(100, ge=1, le=1000, description="取得するレコード数の上限"),
+    db: Session = Depends(get_db),
+) -> list[RecordingInfo]:
+    """録音データの一覧を取得する.
+
+    Args:
+        skip: スキップするレコード数
+        limit: 取得するレコード数の上限
+        db: データベースセッション
+
+    Returns:
+        録音データのリスト
+    """
+    recordings = get_recordings(db, skip=skip, limit=limit)
+
+    recording_infos = []
+    for recording in recordings:
+        # HPCP特徴量の存在確認
+        has_hpcp = (
+            recording.hpcp_features is not None and len(recording.hpcp_features) > 0
+        )
+
+        # SongInfoの構築
+        song_info = None
+        if recording.song:
+            song_info = SongInfo(
+                id=recording.song.id,
+                title=recording.song.title,
+                artist=recording.song.artist,
+                created_at=recording.song.created_at,
+                updated_at=recording.song.updated_at,
+            )
+
+        # RecordingInfoの構築
+        recording_info = RecordingInfo(
+            id=recording.id,
+            song_id=recording.song_id,
+            recording_name=recording.recording_name,
+            duration=recording.duration,
+            sample_rate=recording.sample_rate,
+            created_at=recording.created_at,
+            has_hpcp_features=has_hpcp,
+            song=song_info,
+        )
+
+        recording_infos.append(recording_info)
+
+    return recording_infos
+
+
+@router.get("/{recording_id}", response_model=RecordingInfo)
+async def get_recording_detail(
+    recording_id: int,
+    db: Session = Depends(get_db),
+) -> RecordingInfo:
+    """特定の録音データの詳細を取得する.
+
+    Args:
+        recording_id: 録音データID
+        db: データベースセッション
+
+    Returns:
+        録音データの詳細
+
+    Raises:
+        HTTPException: 録音データが見つからない場合
+    """
+    from app.db.crud import get_recording
+
+    recording = get_recording(db, recording_id)
+    if not recording:
+        raise HTTPException(status_code=404, detail="録音データが見つかりません")
+
+    # HPCP特徴量の存在確認
+    has_hpcp = recording.hpcp_features is not None and len(recording.hpcp_features) > 0
+
+    # SongInfoの構築
+    song_info = None
+    if recording.song:
+        song_info = SongInfo(
+            id=recording.song.id,
+            title=recording.song.title,
+            artist=recording.song.artist,
+            created_at=recording.song.created_at,
+            updated_at=recording.song.updated_at,
+        )
+
+    # RecordingInfoの構築
+    return RecordingInfo(
+        id=recording.id,
+        song_id=recording.song_id,
+        recording_name=recording.recording_name,
+        duration=recording.duration,
+        sample_rate=recording.sample_rate,
+        created_at=recording.created_at,
+        has_hpcp_features=has_hpcp,
+        song=song_info,
+    )

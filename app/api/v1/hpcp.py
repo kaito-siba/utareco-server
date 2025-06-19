@@ -121,18 +121,18 @@ async def search_similar_recordings(
     pre_filter_limit: int = 50,
 ) -> SimilaritySearchResponse:
     """高度な類似度計算を使用した類似楽曲検索.
-    
+
     sqlite-vecで高速に候補を絞り込んだ後、高度な類似度計算で精密に判定します。
-    
+
     Args:
         request: 検索リクエスト（HPCP特徴量、検索方法、取得件数）
         db: データベースセッション
         threshold: 高度な類似度計算の閾値（デフォルト: 0.89）
         pre_filter_limit: 事前フィルタリングで取得する候補数（デフォルト: 50）
-    
+
     Returns:
         類似楽曲検索結果（高度な類似度スコア付き）
-    
+
     Raises:
         HTTPException: 各種エラー
     """
@@ -159,6 +159,7 @@ async def search_similar_recordings(
                     query_hpcp, k=pre_filter_limit
                 )
             else:
+                # そのまま渡す（SQLiteVecManager側でaverage/medianを処理）
                 search_results = vec_manager.search_similar_recordings_by_summary(
                     query_hpcp, k=pre_filter_limit, method=request.search_method
                 )
@@ -171,7 +172,7 @@ async def search_similar_recordings(
         # 高度な類似度計算で再評価とフィルタリング
         filtered_results = []
         for recording_id, distance in search_results:
-            from app.db.crud import get_recording, get_hpcp_array
+            from app.db.crud import get_hpcp_array, get_recording
 
             recording = get_recording(db, recording_id)
             if recording and recording.song:
@@ -182,24 +183,22 @@ async def search_similar_recordings(
                         advanced_score = calculate_similarity_advanced(
                             query_hpcp, ref_hpcp
                         )
-                        
+
                         # 閾値以上のもののみを追加
                         if advanced_score >= threshold:
-                            filtered_results.append((
-                                recording,
-                                advanced_score,
-                                distance
-                            ))
+                            filtered_results.append(
+                                (recording, advanced_score, distance)
+                            )
                 except Exception:
                     # エラーが発生した場合はスキップ
                     continue
-        
+
         # 高度な類似度スコアで降順ソート
         filtered_results.sort(key=lambda x: x[1], reverse=True)
-        
+
         # 結果を指定件数に制限
-        filtered_results = filtered_results[:request.limit]
-        
+        filtered_results = filtered_results[: request.limit]
+
         # レスポンス形式に変換
         similar_recordings = []
         for recording, advanced_score, distance in filtered_results:
@@ -210,7 +209,7 @@ async def search_similar_recordings(
                 created_at=recording.song.created_at,
                 updated_at=recording.song.updated_at,
             )
-            
+
             recording_info = RecordingInfo(
                 id=recording.id,
                 song_id=recording.song_id,
@@ -221,9 +220,9 @@ async def search_similar_recordings(
                 has_hpcp_features=True,
                 song=song_info,
             )
-            
+
             from app.schemas.hpcp import SimilarRecording
-            
+
             similar_recordings.append(
                 SimilarRecording(
                     recording=recording_info,
@@ -275,7 +274,6 @@ async def search_similar_recordings(
     finally:
         if vec_manager:
             vec_manager.close()
-
 
 
 @router.get("/recordings/{recording_id}/hpcp")
